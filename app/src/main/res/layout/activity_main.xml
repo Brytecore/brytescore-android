@@ -71,4 +71,24 @@
         android:text="Dev Mode"
         android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium" />
 
+    <ToggleButton
+        android:id="@+id/debugModeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="17dp"
+        android:onClick="toggleDevMode"
+        android:text="ToggleButton"
+        android:layout_below="@+id/devModeButton"
+        android:layout_alignLeft="@+id/devModeButton"
+        android:layout_alignStart="@+id/devModeButton" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/debugModeButton"
+        android:layout_alignBottom="@+id/debugModeButton"
+        android:layout_toLeftOf="@+id/debugModeButton"
+        android:text="Debug Mode"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium" />
 </RelativeLayout>
