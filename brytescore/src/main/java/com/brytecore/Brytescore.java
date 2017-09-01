@@ -1,5 +1,7 @@
 package com.brytecore;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -61,6 +63,17 @@ public class Brytescore {
     public String getAPIKey() { return _apiKey;}
 
     /**
+     * Sets dev mode.
+     * Logs events to the console instead of sending to the API.
+     *
+     * @param enabled If true, then dev mode is enabled.
+     */
+    public void devMode(Boolean enabled) {
+        System.out.printf("Toggling dev mode %b", enabled);
+        devMode = enabled;
+    }
+
+    /**
      * Start a pageView.
      *
      * @param data The pageView data.
@@ -92,17 +105,22 @@ public class Brytescore {
     }
 
     private void sendRequest(String path, String eventName, String eventDisplayName) {
-        System.out.printf("Calling sendRequest %s %s %s", path, eventName, eventDisplayName);
+        System.out.printf("Calling sendRequest %s %s %s\n", path, eventName, eventDisplayName);
 
-        // Generate the request endpoint
-        String requestEndpoint = _url + "/" + path;
-        try {
-            URL url = new URL(requestEndpoint);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        if (devMode) {
+            // Generate the request endpoint
+            String requestEndpoint = _url + "/" + path;
+            try {
+                URL url = new URL(requestEndpoint);
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            // HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            // con.setRequestMethod("GET");
+        } else {
+            System.out.println("Dev mode is enabled");
         }
-//        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-//        con.setRequestMethod("GET");
+
     }
 }
 
