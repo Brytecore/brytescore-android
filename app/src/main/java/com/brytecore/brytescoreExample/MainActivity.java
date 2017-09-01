@@ -8,6 +8,8 @@ import android.widget.TextView;
 
 import com.brytecore.Brytescore;
 
+import java.util.HashMap;
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
 
@@ -27,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     /** Called when the user taps the Track Page View button */
     public void trackPageView(View view) {
         Log.d(TAG, "Calling trackPageView");
-        brytescore.pageView();
+
+        HashMap<String, String> pageViewData = new HashMap<String, String>();
+        brytescore.pageView(pageViewData);
     }
 }

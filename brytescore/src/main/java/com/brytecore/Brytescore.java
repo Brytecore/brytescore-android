@@ -1,8 +1,9 @@
 package com.brytecore;
 
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
-
-import sun.jvm.hotspot.types.basic.BasicOopField;
 
 public class Brytescore {
 
@@ -70,7 +71,7 @@ public class Brytescore {
      */
     public void pageView(HashMap<String, String> data) {
         System.out.println("Calling pageView");
-        track();
+        track(eventNames.get("pageView"), "Viewed a Page", data);
     }
 
     // ------------------------------------ private functions: ---------------------------------- //
@@ -83,13 +84,25 @@ public class Brytescore {
      * @param data.isImpersonating
      */
 
-    private void track() {
+    private void track(String eventName, String eventDisplayName, HashMap<String, String> data) {
         System.out.println("Calling track");
-        sendRequest();
+
+        // TODO: check impersonation mode
+        sendRequest("track", eventName, eventDisplayName);
     }
 
-    private void sendRequest() {
-        System.out.println("Calling sendRequest");
+    private void sendRequest(String path, String eventName, String eventDisplayName) {
+        System.out.printf("Calling sendRequest %s %s %s", path, eventName, eventDisplayName);
+
+        // Generate the request endpoint
+        String requestEndpoint = _url + "/" + path;
+        try {
+            URL url = new URL(requestEndpoint);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+//        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+//        con.setRequestMethod("GET");
     }
 }
 
