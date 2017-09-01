@@ -69,8 +69,22 @@ public class Brytescore {
      * @param enabled If true, then dev mode is enabled.
      */
     public void devMode(Boolean enabled) {
-        System.out.printf("Toggling dev mode %b", enabled);
         devMode = enabled;
+
+        // If devMode is turned on, debugMode should be too.
+        if (devMode) {
+            debugMode(true);
+        }
+    }
+
+    /**
+     * Sets debug mode.
+     * Log events are suppressed when debug mode is off.
+     *
+     * @param enabled If true, then debug mode is enabled.
+     */
+    public void debugMode(Boolean enabled) {
+        debugMode = enabled;
     }
 
     /**
@@ -96,7 +110,6 @@ public class Brytescore {
      * @param data The event data.
      * @param data.isImpersonating
      */
-
     private void track(String eventName, String eventDisplayName, HashMap<String, String> data) {
         System.out.println("Calling track");
 
@@ -122,5 +135,7 @@ public class Brytescore {
         }
 
     }
+
+    // TODO override println and printf to suppress when debug mode is off.
 }
 
