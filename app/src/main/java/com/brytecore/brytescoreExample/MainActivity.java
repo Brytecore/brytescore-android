@@ -27,5 +27,6 @@ public class MainActivity extends AppCompatActivity {
     /** Called when the user taps the Track Page View button */
     public void trackPageView(View view) {
         Log.d(TAG, "Calling trackPageView");
+        brytescore.pageView();
     }
 }
