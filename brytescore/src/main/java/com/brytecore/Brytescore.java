@@ -77,10 +77,10 @@ public class Brytescore {
     /**
      * Main track function
      *
-     * @param {string} eventName The event name.
-     * @param {string} eventDisplayName The event display name.
-     * @param {object} data The event data.
-     * @param {boolean} data.isImpersonating
+     * @param eventName The event name.
+     * @param eventDisplayName The event display name.
+     * @param data The event data.
+     * @param data.isImpersonating
      */
 
     private void track() {
