@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     // Bools for local status of dev and debug mode, used to toggle state with buttons
     private Boolean devMode = true;
     private Boolean debugMode = true;
+    private Boolean impersonationMode = false;
     private Boolean validationMode = false;
 
 
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         brytescore.registeredAccount(registeredAccountData);
     }
 
-    /** Toggle devMode bool, pass to _apiManager, update button title and color */
+    /** Toggle devMode bool, pass to brytescore, update button */
     public void toggleDevMode(View view) {
         devMode = !devMode;
         brytescore.devMode(devMode);
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /** Toggle devMode bool, pass to _apiManager, update button title and color */
+    /** Toggle debugMode bool, pass to brytescore, update button */
     public void toggleDebugMode(View view) {
         debugMode = !debugMode;
         brytescore.debugMode(debugMode);
@@ -83,6 +84,16 @@ public class MainActivity extends AppCompatActivity {
         ToggleButton toggle = ((ToggleButton)findViewById(R.id.debugModeButton));
         toggle.setChecked(debugMode);
     }
+
+    /** Toggle impersonation bool, pass to brytescore, update button */
+    public void toggleImpersonationMode(View view) {
+        impersonationMode = !impersonationMode;
+        brytescore.impersonationMode(impersonationMode);
+
+        ToggleButton toggle = ((ToggleButton)findViewById(R.id.impersonationModeButton));
+        toggle.setChecked(impersonationMode);
+    }
+
     /** Toggle validationMode bool, pass to brytescore, update button */
     public void toggleValidationMode(View view) {
         validationMode = !validationMode;
