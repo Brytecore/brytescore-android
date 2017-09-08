@@ -46,14 +46,19 @@ public class MainActivity extends AppCompatActivity {
 
     /** Called when the user taps the Track Page View button */
     public void trackPageView(View view) {
-        Log.d(TAG, "Calling trackPageView");
-
-        HashMap<String, String> pageViewData = new HashMap<String, String>();
+        HashMap<String, Object> pageViewData = new HashMap<String, Object>();
         brytescore.pageView(pageViewData);
     }
 
+    public void trackRegisteredAccount(View view) {
+        HashMap<String, Object> registeredAccountData = new HashMap<String, Object>() {{
+            put("isLead", false);
+        }};
+        brytescore.registeredAccount(registeredAccountData);
+    }
+
     /** Toggle devMode bool, pass to _apiManager, update button title and color */
-    public void toggleDevMode() {
+    public void toggleDevMode(View view) {
         devMode = !devMode;
         brytescore.devMode(devMode);
 
@@ -70,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /** Toggle devMode bool, pass to _apiManager, update button title and color */
-    public void toggleDebugMode() {
+    public void toggleDebugMode(View view) {
         debugMode = !debugMode;
         brytescore.debugMode(debugMode);
 
