@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     // Bools for local status of dev and debug mode, used to toggle state with buttons
     private Boolean devMode = true;
     private Boolean debugMode = true;
+    private Boolean validationMode = false;
 
 
     // Initialize the API Manager with your API key.
@@ -81,5 +82,13 @@ public class MainActivity extends AppCompatActivity {
 
         ToggleButton toggle = ((ToggleButton)findViewById(R.id.debugModeButton));
         toggle.setChecked(debugMode);
+    }
+    /** Toggle validationMode bool, pass to brytescore, update button */
+    public void toggleValidationMode(View view) {
+        validationMode = !validationMode;
+        brytescore.validationMode(validationMode);
+
+        ToggleButton toggle = ((ToggleButton)findViewById(R.id.validationModeButton));
+        toggle.setChecked(validationMode);
     }
 }
