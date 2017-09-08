@@ -76,7 +76,7 @@ public class Brytescore {
      *
      * @param package The name of the package.
      */
-    public void load(String package) {
+    public void load(String packageName) {
         // STUB
     }
 
