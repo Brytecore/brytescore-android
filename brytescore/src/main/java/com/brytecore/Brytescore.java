@@ -6,6 +6,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Brytescore {
 
@@ -55,7 +56,13 @@ public class Brytescore {
      *
      * @param apiKey The API key.
      */
-    public Brytescore(String apiKey) { this._apiKey = apiKey; }
+    public Brytescore(String apiKey) {
+        _apiKey = apiKey;
+
+        // TODO Generate and save unique session ID
+
+        // TODO Retrieve user ID from brytescore_uu_uid
+    }
 
     /**
      * Returns the current API key
@@ -96,9 +103,27 @@ public class Brytescore {
      * @param data.pageTitle
      * @param data.referrer
      */
-    public void pageView(HashMap<String, String> data) {
+    public void pageView(HashMap<String, Object> data) {
         System.out.println("Calling pageView");
         track(eventNames.get("pageView"), "Viewed a Page", data);
+    }
+
+    /**
+     * Sends a new account registration event.
+     * - parameter data: The registration data.
+     * - data.isImpersonating
+     * - data.userAccount.id
+     */
+    public void registeredAccount(HashMap<String, Object> data) {
+        System.out.println("Calling registeredAccount");
+
+        // TODO handle impersonating
+        // If the user is being impersonated, do not track.
+
+        // TODO
+
+        // Finally, as long as the data was valid, track the account registration
+        track(eventNames.get("registeredAccount"), "Created a new account", data);
     }
 
     // ------------------------------------ private functions: ---------------------------------- //
@@ -110,7 +135,7 @@ public class Brytescore {
      * @param data The event data.
      * @param data.isImpersonating
      */
-    private void track(String eventName, String eventDisplayName, HashMap<String, String> data) {
+    private void track(String eventName, String eventDisplayName, HashMap<String, Object> data) {
         System.out.println("Calling track");
 
         // TODO: check impersonation mode
