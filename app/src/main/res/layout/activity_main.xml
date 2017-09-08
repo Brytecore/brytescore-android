@@ -35,7 +35,7 @@
         android:layout_alignParentEnd="true" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/trackPageViewButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="21dp"
@@ -47,6 +47,66 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
+    <Button
+        android:id="@+id/trackRegisteredAccountButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/trackPageViewButton"
+        android:onClick="trackRegisteredAccount"
+        android:text="Track Registered Account" />
+
+    <Button
+        android:id="@+id/trackAuthenticatedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/trackRegisteredAccountButton"
+        android:onClick="trackAuthenticated"
+        android:text="Track Authenticated" />
+
+    <Button
+        android:id="@+id/trackSubmittedFormButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/trackAuthenticatedButton"
+        android:onClick="trackSubmittedForm"
+        android:text="Track Submitted Form" />
+
+    <Button
+        android:id="@+id/trackStartedChatButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/trackSubmittedFormButton"
+        android:onClick="trackStartedChat"
+        android:text="Track Started Chat" />
+
+    <Button
+        android:id="@+id/trackUpdatedUserInfoButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/trackStartedChatButton"
+        android:onClick="trackUpdatedUserInfo"
+        android:text="Track Updated User Info" />
+
     <ToggleButton
         android:id="@+id/devModeButton"
         android:layout_width="wrap_content"
@@ -55,7 +115,7 @@
         android:layout_marginRight="89dp"
         android:onClick="toggleDevMode"
         android:text="ToggleButton"
-        android:layout_above="@+id/debugModeButton"
+        android:layout_below="@+id/trackUpdatedUserInfoButton"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
@@ -76,10 +136,9 @@
         android:layout_height="wrap_content"
         android:onClick="toggleDebugMode"
         android:text="ToggleButton"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/devModeButton"
         android:layout_alignLeft="@+id/devModeButton"
-        android:layout_alignStart="@+id/devModeButton"
-        android:layout_marginBottom="30dp" />
+        android:layout_alignStart="@+id/devModeButton" />
 
     <TextView
         android:id="@+id/textView"
@@ -91,15 +150,44 @@
         android:text="Debug Mode"
         android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium" />
 
-    <Button
-        android:id="@+id/button2"
+    <ToggleButton
+        android:id="@+id/impersonationModeButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/button"
-        android:onClick="trackRegisteredAccount"
-        android:text="Track Registered Account" />
+        android:onClick="toggleImpersonationMode"
+        android:text="ToggleButton"
+        android:layout_below="@+id/debugModeButton"
+        android:layout_alignLeft="@+id/debugModeButton"
+        android:layout_alignStart="@+id/debugModeButton" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/impersonationModeButton"
+        android:layout_alignBottom="@+id/impersonationModeButton"
+        android:layout_toLeftOf="@+id/impersonationModeButton"
+        android:text="Impersonation Mode"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium" />
+
+    <ToggleButton
+        android:id="@+id/validationModeButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="toggleValidationMode"
+        android:text="ToggleButton"
+        android:layout_below="@+id/impersonationModeButton"
+        android:layout_alignLeft="@+id/impersonationModeButton"
+        android:layout_alignStart="@+id/impersonationModeButton" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/validationModeButton"
+        android:layout_alignBottom="@+id/validationModeButton"
+        android:layout_toLeftOf="@+id/validationModeButton"
+        android:text="Validation Mode"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium" />
+
 </RelativeLayout>
