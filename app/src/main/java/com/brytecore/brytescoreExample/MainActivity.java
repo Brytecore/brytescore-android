@@ -46,17 +46,68 @@ public class MainActivity extends AppCompatActivity {
         textViewToChange.setText("Your API Key:" + brytescore.getAPIKey());
     }
 
-    /** Called when the user taps the Track Page View button */
+    /**
+     * Called when the user taps the Track Page View button
+     * Example usage of tracking a page view
+     */
     public void trackPageView(View view) {
         HashMap<String, Object> pageViewData = new HashMap<String, Object>();
         brytescore.pageView(pageViewData);
     }
 
+    /**
+     * Called when the user taps the Track Registered Account button
+     * Example usage of tracking an account registration
+     */
     public void trackRegisteredAccount(View view) {
         HashMap<String, Object> registeredAccountData = new HashMap<String, Object>() {{
             put("isLead", false);
         }};
         brytescore.registeredAccount(registeredAccountData);
+    }
+
+    /**
+     * Called when the user taps the Track Authenticated button
+     * Example usage of tracking authentication
+     */
+    public void trackAuthenticated(View view) {
+        HashMap<String, Object> authenticatedData = new HashMap<String, Object>() {{
+            put("userAccount", 1);
+        }};
+        brytescore.authenticated(authenticatedData);
+    }
+
+    /**
+     * Called when the user taps the Track Submitted Form button
+     * Example usage of tracking a submitted form
+     */
+    public void trackSubmittedForm(View view) {
+        HashMap<String, Object> submittedFormData = new HashMap<String, Object>() {{
+            put("userAccount", 1);
+        }};
+        brytescore.submittedForm(submittedFormData);
+    }
+
+    /**
+     * Called when the user taps the Track Started Chat button
+     * Example usage of tracking the start of a chat
+     */
+    public void trackStartedChat(View view) {
+        HashMap<String, Object> startedCharData = new HashMap<String, Object>() {{
+            put("userAccount", 1);
+        }};
+        brytescore.startedChat(startedCharData);
+    }
+
+    /**
+     * Called when the user taps the Track Updated User Info button
+     * Example usage of tracking when a user updates their information
+     */
+    public void trackUpdatedUserInfo(View view) {
+        HashMap<String, Object> userInfoData = new HashMap<String, Object>() {{
+            put("userAccount", 1);
+        }};
+        brytescore.updatedUserInfo(userInfoData);
     }
 
     /** Toggle devMode bool, pass to brytescore, update button */

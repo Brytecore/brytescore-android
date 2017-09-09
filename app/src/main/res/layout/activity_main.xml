@@ -184,10 +184,10 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/validationModeButton"
-        android:layout_alignBottom="@+id/validationModeButton"
-        android:layout_toLeftOf="@+id/validationModeButton"
         android:text="Validation Mode"
-        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium" />
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
+        android:layout_above="@+id/impersonationModeButton"
+        android:layout_alignLeft="@+id/textView"
+        android:layout_alignStart="@+id/textView" />
 
 </RelativeLayout>

@@ -123,7 +123,7 @@ public class Brytescore {
      * @param enabled If true, then validation mode is enabled.
      */
     public void validationMode(Boolean enabled) {
-        validationMode = enabled
+        validationMode = enabled;
     }
 
     /**
@@ -235,7 +235,7 @@ public class Brytescore {
         // TODO Reset the heartbeat start time
 
         // Delete and TODO save session id
-        sessionId = null
+        sessionId = null;
 
         // Reset pageViewIDs
         pageViewId = null;
@@ -277,4 +277,3 @@ public class Brytescore {
 
     // TODO override println and printf to suppress when debug mode is off.
 }
-
