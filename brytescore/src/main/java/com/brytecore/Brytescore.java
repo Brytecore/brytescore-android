@@ -174,14 +174,12 @@ public class Brytescore {
      */
     public void registeredAccount(HashMap<String, Object> data) {
         System.out.println("Calling registeredAccount");
-
-        // TODO handle impersonating
-        // If the user is being impersonated, do not track.
-
-        // TODO
+        Boolean userStatus = updateUser(data);
 
         // Finally, as long as the data was valid, track the account registration
-        track(eventNames.get("registeredAccount"), "Created a new account", data);
+        if (userStatus == true) {
+            track(eventNames.get("registeredAccount"), "Created a new account", data);
+        }
     }
 
     /**
@@ -286,7 +284,7 @@ public class Brytescore {
         System.out.printf("Calling sendRequest %s %s %s\n", path, eventName, eventDisplayName);
 
         if (_apiKey.length() == 0) {
-            System.out.printf("Abandon ship! You must provide an API key.");
+            System.out.println("Abandon ship! You must provide an API key.");
             return;
         }
 
@@ -373,6 +371,64 @@ public class Brytescore {
         UUID uuid = UUID.randomUUID();
         String UUIDString = uuid.toString();
         return UUIDString;
+    }
+
+    /**
+     * - Ensure that the user is not being impersonated
+     * - Ensure that we have a user ID in the data parameter
+     * - Update the global `userId` if it is not accurate
+     */
+    private Boolean updateUser(HashMap<String, Object> data) {
+        // If the user is being impersonated, do not track.
+        if (!checkImpersonation(data)) {
+            return Boolean.FALSE;
+        }
+
+        // Ensure that we have a user ID from data.userAccount.id
+        if (!data.containsKey("userAccount")) {
+            System.out.println("data.userAccount is not defined");
+            return Boolean.FALSE;
+        }
+
+       // TODO
+        Integer localUserID = 10;
+       // else if (data.get("userAccount") instanceof Map == false || data.get("userAccount").get("id") == null) {
+       //     System.out.println("data.userAccount.id is not defined");
+       //     return Boolean.FALSE;
+       // } else {
+       // }
+
+        // If we haven't saved the user ID globally, or the user IDs do not match
+        if (userId == null || localUserID != userId) {
+            // TODO Retrieve anonymous user ID from brytescore_uu_aid, or generate a new anonymous user ID
+            final String anonymousId = generateUUID();
+            System.out.printf("Generated new anonymous user ID: %s \n", anonymousId);
+
+            HashMap<String, Object> createdData = new HashMap<String, Object>() {{
+                put("anonymousId", anonymousId);
+            }};
+            track(eventNames.get("brytescoreUUIDCreated"), "New user id Created", createdData);
+
+            // Save our new user ID to our global userId
+            userId = localUserID;
+
+            // TODO Save our anonymous id and user id to local storage.
+        }
+
+        return Boolean.TRUE;
+    }
+
+    /**
+     * Checks to make sure that impersonation mode is not on globally, or that the user's data
+     * does not contain impersonation mode.
+     * @return Boolean Whether impersonation mode is on or not
+     */
+    private Boolean checkImpersonation(HashMap<String, Object> data) {
+        if (impersonationMode || data.get("impersonationMode") != null) {
+            System.out.println("Impersonation mode is on - will not track event");
+            return Boolean.FALSE;
+        }
+        return Boolean.TRUE;
     }
 
     // TODO override println and printf to suppress when debug mode is off.
