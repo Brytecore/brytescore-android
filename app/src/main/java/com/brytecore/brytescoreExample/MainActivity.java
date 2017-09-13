@@ -95,10 +95,10 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking the start of a chat
      */
     public void trackStartedChat(View view) {
-        HashMap<String, Object> startedCharData = new HashMap<String, Object>() {{
+        HashMap<String, Object> startedChatData = new HashMap<String, Object>() {{
             put("userAccount", 1);
         }};
-        brytescore.startedChat(startedCharData);
+        brytescore.startedChat(startedChatData);
     }
 
     /**
