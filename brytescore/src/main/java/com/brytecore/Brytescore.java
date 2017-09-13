@@ -2,6 +2,7 @@ package com.brytecore;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
@@ -302,6 +303,17 @@ public class Brytescore {
         } else {
             System.out.println("Dev mode is enabled");
         }
+    }
+
+    /**
+     * Generate RFC4112 version 4 compliant UUID using Java's built-in generator
+     *
+     * @return a new UUID string
+     */
+    private String generateUUID() {
+        UUID uuid = UUID.randomUUID();
+        String UUIDString = uuid.toString();
+        return UUIDString;
     }
 
     // TODO override println and printf to suppress when debug mode is off.
