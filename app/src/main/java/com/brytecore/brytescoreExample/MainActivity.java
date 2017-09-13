@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public void trackPageView(View view) {
         HashMap<String, Object> pageViewData = new HashMap<String, Object>();
+        pageViewData.put("test_key", "test_data");
+
         brytescore.pageView(pageViewData);
     }
 

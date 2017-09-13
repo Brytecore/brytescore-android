@@ -8,8 +8,8 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.http.FieldMap;
-import retrofit2.http.FormUrlEncoded;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
 import retrofit2.http.POST;
 
 public class Brytescore {
@@ -57,12 +57,12 @@ public class Brytescore {
     // HTTP Connection service for generic track endpoint
     public interface ApiService {
         @POST("track")
-        @FormUrlEncoded
-        Call<ResponseBody> track(@FieldMap Map<String, String> params );
+        Call<ResponseBody> track(@Body Map<String, Object> params );
     }
     // HTTP Connection instance for generic track endpoint
     Retrofit retrofit = new Retrofit.Builder()
-        .baseUrl(url)
+        .baseUrl(_url)
+        .addConverterFactory(GsonConverterFactory.create())
         .build();
     ApiService service = retrofit.create(ApiService.class);
 
@@ -270,16 +270,14 @@ public class Brytescore {
         System.out.println("Calling track");
 
         // TODO: check impersonation mode
-        sendRequest("track", eventName, eventDisplayName);
+        sendRequest("track", eventName, eventDisplayName, data);
     }
 
-    private void sendRequest(String path, String eventName, String eventDisplayName) {
+    private void sendRequest(String path, String eventName, String eventDisplayName, HashMap<String, Object> data) {
         System.out.printf("Calling sendRequest %s %s %s\n", path, eventName, eventDisplayName);
 
         if (devMode) {
-            Map<String, String> params = new HashMap<>();
-            params.put("code", "something");
-            Call<ResponseBody> call = service.track(params);
+            Call<ResponseBody> call = service.track(data);
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
