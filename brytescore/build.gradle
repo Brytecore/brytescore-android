@@ -2,6 +2,12 @@ apply plugin: 'java'
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
+    // Retrofit
+    compile 'com.squareup.retrofit2:retrofit:2.3.0'
+
+    // JSON Parsing
+    compile 'com.google.code.gson:gson:2.6.1'
+    compile 'com.squareup.retrofit2:converter-gson:2.3.0'
 }
 
 sourceCompatibility = "1.7"

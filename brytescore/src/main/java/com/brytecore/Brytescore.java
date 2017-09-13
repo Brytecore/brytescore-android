@@ -1,18 +1,23 @@
 package com.brytecore;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
+import retrofit2.http.POST;
 
 public class Brytescore {
 
     // ------------------------------------ static variables ------------------------------------ //
     // Variables used to fill event data for tracking
-    private static String _url = "https://api.brytecore.com";
+    private static String _url = "https://api.brytecore.com/";
     private static String hostname = "com.brytecore.mobile";
     private static String library = "Android";
     private static String libraryVersion = "0.0.0";
@@ -49,6 +54,18 @@ public class Brytescore {
     private Boolean debugMode = false;
     private Boolean impersonationMode = false;
     private Boolean validationMode = false;
+
+    // HTTP Connection service for generic track endpoint
+    public interface ApiService {
+        @POST("track")
+        Call<ResponseBody> track(@Body Map<String, Object> params );
+    }
+    // HTTP Connection instance for generic track endpoint
+    Retrofit retrofit = new Retrofit.Builder()
+        .baseUrl(_url)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build();
+    ApiService service = retrofit.create(ApiService.class);
 
     // ------------------------------------ public functions: ----------------------------------- //
     /**
@@ -157,14 +174,12 @@ public class Brytescore {
      */
     public void registeredAccount(HashMap<String, Object> data) {
         System.out.println("Calling registeredAccount");
-
-        // TODO handle impersonating
-        // If the user is being impersonated, do not track.
-
-        // TODO
+        Boolean userStatus = updateUser(data);
 
         // Finally, as long as the data was valid, track the account registration
-        track(eventNames.get("registeredAccount"), "Created a new account", data);
+        if (userStatus == true) {
+            track(eventNames.get("registeredAccount"), "Created a new account", data);
+        }
     }
 
     /**
@@ -248,31 +263,172 @@ public class Brytescore {
      * @param eventName The event name.
      * @param eventDisplayName The event display name.
      * @param data The event data.
-     * @param data.isImpersonating
+     * @param data.isImpersonating Bool whether user is being impersonated
      */
     private void track(String eventName, String eventDisplayName, HashMap<String, Object> data) {
         System.out.println("Calling track");
 
         // TODO: check impersonation mode
-        sendRequest("track", eventName, eventDisplayName);
+        sendRequest("track", eventName, eventDisplayName, data);
     }
 
-    private void sendRequest(String path, String eventName, String eventDisplayName) {
+    /**
+     * Helper Function for making CORS calls to the API.
+     *
+     * @param path path for the API URL.
+     * @param eventName name of the event being tracked.
+     * @param eventDisplayName display name of the event being tracked.
+     * @param data metadate of the event being tracked.
+     */
+    private void sendRequest(String path, final String eventName, final String eventDisplayName, final HashMap<String, Object> data) {
         System.out.printf("Calling sendRequest %s %s %s\n", path, eventName, eventDisplayName);
 
-        if (devMode) {
-            // Generate the request endpoint
-            String requestEndpoint = _url + "/" + path;
-            try {
-                URL url = new URL(requestEndpoint);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            // HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            // con.setRequestMethod("GET");
+        if (_apiKey.length() == 0) {
+            System.out.println("Abandon ship! You must provide an API key.");
+            return;
+        }
+
+        // Deduce the schema version (namespace)
+        // Check if the property is of the format 'namespace.functionName'
+        // If so, replace the namespace
+        final String namespace[] = new String[1];
+        namespace[0] = "analytics";
+        String[] splitPackage = path.split(".");
+        if (splitPackage.length == 2) {
+            namespace[0] = splitPackage[0];
+        }
+
+        /**
+         * Generate the object to send to the API
+         *
+         * - "event"              - param     - eventName
+         * - "eventDisplayName"   - param     - eventDisplayName
+         * - "hostName" - static  - static    - custom Android hostname
+         * - "apiKey"             - static    - user's API key
+         * - "anonymousId"        - generated - Brytescore UID
+         * - "userId"             - retrieved - Client user id, may be null if unauthenticated
+         * - "pageViewId"         - generated - Brytescore UID
+         * - "sessionId"          - generated - Brytescore session id
+         * - "library"            - static    - library type
+         * - "libraryVersion"     - static    - library version
+         * - "schemaVersion"      - generated - if eventName contains '.', use a custom schemaVersion based on the eventName. otherwise, use schemaVersion.analytics
+         * - "data"               - param     - data
+         * */
+        HashMap<String, Object> eventData = new HashMap<String, Object>() {{
+            put("event", eventName);
+            put("eventDisplayName", eventDisplayName);
+            put("hostName", hostname);
+            put("apiKey", _apiKey);
+            put("anonymousId", anonymousId);
+            put("userId", userId);
+            put("pageViewId", generateUUID());
+            put("sessionId", sessionId);
+            put("library", library);
+            put("libraryVersion", libraryVersion);
+            put("schemaVersion", schemaVersion.get(namespace[0]));
+            put("data", data);
+        }};
+
+        // Handle validation mode, if activated
+        if (validationMode) {
+            eventData.put("validationOnly", validationMode);
+        }
+
+        if (!devMode) {
+            Call<ResponseBody> call = service.track(eventData);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    System.out.println("HTTP: Response Caught");
+                    try {
+                        if (response.isSuccessful()) {
+                            System.out.println("HTTP: Response Success");
+                        } else {
+                            System.out.println("HTTP: Response Failed");
+                        }
+                    } catch (Exception e) {
+                        System.out.println("HTTP : Response Exception");
+                        e.printStackTrace();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    System.out.println("HTTP: Request failed");
+                }
+            });
         } else {
             System.out.println("Dev mode is enabled");
         }
+    }
+
+    /**
+     * Generate RFC4112 version 4 compliant UUID using Java's built-in generator
+     *
+     * @return a new UUID string.
+     */
+    private String generateUUID() {
+        UUID uuid = UUID.randomUUID();
+        String UUIDString = uuid.toString();
+        return UUIDString;
+    }
+
+    /**
+     * - Ensure that the user is not being impersonated
+     * - Ensure that we have a user ID in the data parameter
+     * - Update the global `userId` if it is not accurate
+     */
+    private Boolean updateUser(HashMap<String, Object> data) {
+        // If the user is being impersonated, do not track.
+        if (!checkImpersonation(data)) {
+            return Boolean.FALSE;
+        }
+
+        // Ensure that we have a user ID from data.userAccount.id
+        if (!data.containsKey("userAccount")) {
+            System.out.println("data.userAccount is not defined");
+            return Boolean.FALSE;
+        }
+
+       // TODO
+        Integer localUserID = 10;
+       // else if (data.get("userAccount") instanceof Map == false || data.get("userAccount").get("id") == null) {
+       //     System.out.println("data.userAccount.id is not defined");
+       //     return Boolean.FALSE;
+       // } else {
+       // }
+
+        // If we haven't saved the user ID globally, or the user IDs do not match
+        if (userId == null || localUserID != userId) {
+            // TODO Retrieve anonymous user ID from brytescore_uu_aid, or generate a new anonymous user ID
+            final String anonymousId = generateUUID();
+            System.out.printf("Generated new anonymous user ID: %s \n", anonymousId);
+
+            HashMap<String, Object> createdData = new HashMap<String, Object>() {{
+                put("anonymousId", anonymousId);
+            }};
+            track(eventNames.get("brytescoreUUIDCreated"), "New user id Created", createdData);
+
+            // Save our new user ID to our global userId
+            userId = localUserID;
+
+            // TODO Save our anonymous id and user id to local storage.
+        }
+
+        return Boolean.TRUE;
+    }
+
+    /**
+     * Checks to make sure that impersonation mode is not on globally, or that the user's data
+     * does not contain impersonation mode.
+     * @return Boolean Whether impersonation mode is on or not
+     */
+    private Boolean checkImpersonation(HashMap<String, Object> data) {
+        if (impersonationMode || data.get("impersonationMode") != null) {
+            System.out.println("Impersonation mode is on - will not track event");
+            return Boolean.FALSE;
+        }
+        return Boolean.TRUE;
     }
 
     // TODO override println and printf to suppress when debug mode is off.

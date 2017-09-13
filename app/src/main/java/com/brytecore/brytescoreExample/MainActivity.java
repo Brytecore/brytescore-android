@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public void trackPageView(View view) {
         HashMap<String, Object> pageViewData = new HashMap<String, Object>();
+        pageViewData.put("test_key", "test_data");
+
         brytescore.pageView(pageViewData);
     }
 
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void trackRegisteredAccount(View view) {
         HashMap<String, Object> registeredAccountData = new HashMap<String, Object>() {{
+            put("userAccount", 1);
             put("isLead", false);
         }};
         brytescore.registeredAccount(registeredAccountData);
@@ -93,10 +96,10 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking the start of a chat
      */
     public void trackStartedChat(View view) {
-        HashMap<String, Object> startedCharData = new HashMap<String, Object>() {{
+        HashMap<String, Object> startedChatData = new HashMap<String, Object>() {{
             put("userAccount", 1);
         }};
-        brytescore.startedChat(startedCharData);
+        brytescore.startedChat(startedChatData);
     }
 
     /**
