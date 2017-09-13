@@ -1,18 +1,22 @@
 package com.brytecore;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.http.FieldMap;
+import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.POST;
 
 public class Brytescore {
 
     // ------------------------------------ static variables ------------------------------------ //
     // Variables used to fill event data for tracking
-    private static String _url = "https://api.brytecore.com";
+    private static String _url = "https://api.brytecore.com/";
     private static String hostname = "com.brytecore.mobile";
     private static String library = "Android";
     private static String libraryVersion = "0.0.0";
@@ -49,6 +53,18 @@ public class Brytescore {
     private Boolean debugMode = false;
     private Boolean impersonationMode = false;
     private Boolean validationMode = false;
+
+    // HTTP Connection service for generic track endpoint
+    public interface ApiService {
+        @POST("track")
+        @FormUrlEncoded
+        Call<ResponseBody> track(@FieldMap Map<String, String> params );
+    }
+    // HTTP Connection instance for generic track endpoint
+    Retrofit retrofit = new Retrofit.Builder()
+        .baseUrl(url)
+        .build();
+    ApiService service = retrofit.create(ApiService.class);
 
     // ------------------------------------ public functions: ----------------------------------- //
     /**
@@ -261,15 +277,20 @@ public class Brytescore {
         System.out.printf("Calling sendRequest %s %s %s\n", path, eventName, eventDisplayName);
 
         if (devMode) {
-            // Generate the request endpoint
-            String requestEndpoint = _url + "/" + path;
-            try {
-                URL url = new URL(requestEndpoint);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            // HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            // con.setRequestMethod("GET");
+            Map<String, String> params = new HashMap<>();
+            params.put("code", "something");
+            Call<ResponseBody> call = service.track(params);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    System.out.println("HTTP: Response Caught");
+                }
+
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    System.out.println("HTTP: Request failed");
+                }
+            });
         } else {
             System.out.println("Dev mode is enabled");
         }
