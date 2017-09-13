@@ -282,6 +282,16 @@ public class Brytescore {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                     System.out.println("HTTP: Response Caught");
+                    try {
+                        if (response.isSuccessful()) {
+                            System.out.println("HTTP: Response Success");
+                        } else {
+                            System.out.println("HTTP: Response Failed");
+                        }
+                    } catch (Exception e) {
+                        System.out.println("HTTP : Response Exception");
+                        e.printStackTrace();
+                    }
                 }
 
                 @Override
