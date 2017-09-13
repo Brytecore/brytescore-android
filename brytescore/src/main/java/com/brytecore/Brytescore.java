@@ -265,7 +265,7 @@ public class Brytescore {
      * @param eventName The event name.
      * @param eventDisplayName The event display name.
      * @param data The event data.
-     * @param data.isImpersonating
+     * @param data.isImpersonating Bool whether user is being impersonated
      */
     private void track(String eventName, String eventDisplayName, HashMap<String, Object> data) {
         System.out.println("Calling track");
@@ -274,6 +274,14 @@ public class Brytescore {
         sendRequest("track", eventName, eventDisplayName, data);
     }
 
+    /**
+     * Helper Function for making CORS calls to the API.
+     *
+     * @param path path for the API URL.
+     * @param eventName name of the event being tracked.
+     * @param eventDisplayName display name of the event being tracked.
+     * @param data metadate of the event being tracked.
+     */
     private void sendRequest(String path, String eventName, String eventDisplayName, HashMap<String, Object> data) {
         System.out.printf("Calling sendRequest %s %s %s\n", path, eventName, eventDisplayName);
 
@@ -308,7 +316,7 @@ public class Brytescore {
     /**
      * Generate RFC4112 version 4 compliant UUID using Java's built-in generator
      *
-     * @return a new UUID string
+     * @return a new UUID string.
      */
     private String generateUUID() {
         UUID uuid = UUID.randomUUID();
