@@ -282,11 +282,62 @@ public class Brytescore {
      * @param eventDisplayName display name of the event being tracked.
      * @param data metadate of the event being tracked.
      */
-    private void sendRequest(String path, String eventName, String eventDisplayName, HashMap<String, Object> data) {
+    private void sendRequest(String path, final String eventName, final String eventDisplayName, final HashMap<String, Object> data) {
         System.out.printf("Calling sendRequest %s %s %s\n", path, eventName, eventDisplayName);
 
-        if (devMode) {
-            Call<ResponseBody> call = service.track(data);
+        if (_apiKey.length() == 0) {
+            System.out.printf("Abandon ship! You must provide an API key.");
+            return;
+        }
+
+        // Deduce the schema version (namespace)
+        // Check if the property is of the format 'namespace.functionName'
+        // If so, replace the namespace
+        final String namespace[] = new String[1];
+        namespace[0] = "analytics";
+        String[] splitPackage = path.split(".");
+        if (splitPackage.length == 2) {
+            namespace[0] = splitPackage[0];
+        }
+
+        /**
+         * Generate the object to send to the API
+         *
+         * - "event"              - param     - eventName
+         * - "eventDisplayName"   - param     - eventDisplayName
+         * - "hostName" - static  - static    - custom Android hostname
+         * - "apiKey"             - static    - user's API key
+         * - "anonymousId"        - generated - Brytescore UID
+         * - "userId"             - retrieved - Client user id, may be null if unauthenticated
+         * - "pageViewId"         - generated - Brytescore UID
+         * - "sessionId"          - generated - Brytescore session id
+         * - "library"            - static    - library type
+         * - "libraryVersion"     - static    - library version
+         * - "schemaVersion"      - generated - if eventName contains '.', use a custom schemaVersion based on the eventName. otherwise, use schemaVersion.analytics
+         * - "data"               - param     - data
+         * */
+        HashMap<String, Object> eventData = new HashMap<String, Object>() {{
+            put("event", eventName);
+            put("eventDisplayName", eventDisplayName);
+            put("hostName", hostname);
+            put("apiKey", _apiKey);
+            put("anonymousId", anonymousId);
+            put("userId", userId);
+            put("pageViewId", generateUUID());
+            put("sessionId", sessionId);
+            put("library", library);
+            put("libraryVersion", libraryVersion);
+            put("schemaVersion", schemaVersion.get(namespace[0]));
+            put("data", data);
+        }};
+
+        // Handle validation mode, if activated
+        if (validationMode) {
+            eventData.put("validationOnly", validationMode);
+        }
+
+        if (!devMode) {
+            Call<ResponseBody> call = service.track(eventData);
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
