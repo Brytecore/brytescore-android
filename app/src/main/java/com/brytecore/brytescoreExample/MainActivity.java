@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void trackRegisteredAccount(View view) {
         HashMap<String, Object> registeredAccountData = new HashMap<String, Object>() {{
+            put("userAccount", 1);
             put("isLead", false);
         }};
         brytescore.registeredAccount(registeredAccountData);
