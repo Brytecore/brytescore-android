@@ -1,4 +1,4 @@
-<img src="https://brytecore.com/images/logo-lead-booster.png" width="200" alt="Brytescore Android">
+<img src="https://raw.githubusercontent.com/Brytecore/brytescore.js/master/examples/lead-booster-analytics.png" width="400" height="98" alt="Lead Booster Analytics">
 
 # brytescore-android
 
