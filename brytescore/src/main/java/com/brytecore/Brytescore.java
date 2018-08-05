@@ -1,5 +1,17 @@
 package com.brytecore;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -11,13 +23,19 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Body;
+import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.Url;
 
 public class Brytescore {
 
     // ------------------------------------ static variables ------------------------------------ //
     // Variables used to fill event data for tracking
-    private static String _url = "https://api.brytecore.com/";
+    private static final String TAG = "Brytescore";
+//    private static String _url = "https://api.brytecore.com/";
+    private static String _url = "http://bda15d1d.ngrok.io/";
+    private static String _packageUrl = "https://cdn.brytecore.com/packages/";
+    private static String _packageName = "/package.json";
     private static String hostname = "com.brytecore.mobile";
     private static String library = "Android";
     private static String libraryVersion = "0.0.0";
@@ -36,6 +54,7 @@ public class Brytescore {
 
     // ------------------------------------ dynamic variables ----------------------------------- //
     private String _apiKey;
+    private SharedPreferences preferences;
 
     // Variables to hold package-wide IDs
     private Integer userId;
@@ -49,6 +68,16 @@ public class Brytescore {
         put("analytics","0.3.1");
     }};
 
+    // Dynamically loaded packages
+    private HashMap<String, JsonObject> packageFunctions = new HashMap<>();
+
+    // Variables for heartbeat timer
+    private Runnable heartbeatTimer;
+    private Handler heartbeatTimerHandler;
+    private Integer heartbeatLength = 15000;
+    private Date startHeartbeatTime = Calendar.getInstance().getTime();
+    private Integer totalPageViewTime = 0;
+
     // Variables for mode statuses
     private Boolean devMode = false;
     private Boolean debugMode = false;
@@ -56,16 +85,30 @@ public class Brytescore {
     private Boolean validationMode = false;
 
     // HTTP Connection service for generic track endpoint
-    public interface ApiService {
+    interface ApiService {
         @POST("track")
-        Call<ResponseBody> track(@Body Map<String, Object> params );
+        Call<ResponseBody> track(@Body Map<String, Object> params);
     }
+
+    // HTTP Connection service for generic package endpoint
+    interface PackageApiService {
+        @GET
+        Call<Object> getPackage(@Url String url);
+    }
+
     // HTTP Connection instance for generic track endpoint
-    Retrofit retrofit = new Retrofit.Builder()
+    private Retrofit retrofit = new Retrofit.Builder()
         .baseUrl(_url)
         .addConverterFactory(GsonConverterFactory.create())
         .build();
-    ApiService service = retrofit.create(ApiService.class);
+    private ApiService service = retrofit.create(ApiService.class);
+
+    // HTTP Connection instance for generic package endpoint
+    private Retrofit packageRetrofit = new Retrofit.Builder()
+            .baseUrl(_packageUrl)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
+    private PackageApiService packageService = packageRetrofit.create(PackageApiService.class);
 
     // ------------------------------------ public functions: ----------------------------------- //
     /**
@@ -75,26 +118,81 @@ public class Brytescore {
      *
      * @param apiKey The API key.
      */
-    public Brytescore(String apiKey) {
+    public Brytescore(Context context, String apiKey) {
         _apiKey = apiKey;
 
-        // TODO Generate and save unique session ID
+        // Get shared preferences
+        preferences = context.getSharedPreferences("com.brytecore.brytescore", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
 
-        // TODO Retrieve user ID from brytescore_uu_uid
+        // Generate and save unique session ID
+        sessionId = generateUUID();
+        editor.putString("brytescore_session_sid", sessionId);
+        editor.apply();
+
+        // Retrieve user ID from brytescore_uu_uid
+        userId = preferences.getInt("brytescore_uu_uid", -1);
     }
 
     /**
      * Returns the current API key
      */
-    public String getAPIKey() { return _apiKey;}
+    public String getAPIKey() {
+        return _apiKey;
+    }
 
     /**
      * Function to load json packages.
      *
-     * @param package The name of the package.
+     * @param packageName The name of the package.
      */
-    public void load(String packageName) {
-        // STUB
+    public void load(final String packageName) {
+        print("Calling load: " + packageName);
+        print("Loading " + _packageUrl + packageName + _packageName);
+
+        // Generate the request endpoint
+        String requestEndpoint = packageName + _packageName;
+
+        // Set up the URL request
+        Call<Object> call = packageService.getPackage(requestEndpoint);
+        call.enqueue(new Callback<Object>() {
+            @Override
+            public void onResponse(@NonNull Call<Object> call, @NonNull Response<Object> response) {
+                print("HTTP: Response Caught");
+                try {
+                    if (response.isSuccessful()) {
+                        print("HTTP: Response Success");
+
+                        // Parse the API response data
+                        Gson gson = new Gson();
+                        String responseStr = gson.toJson(response.body());
+
+                        // Get JsonObject from String
+                        JsonParser jsonParser = new JsonParser();
+                        JsonObject responseJSON = jsonParser.parse(responseStr).getAsJsonObject();
+
+                        print("Call Successful, response: " + responseJSON);
+
+                        // Get just the events object of the package
+                        packageFunctions.put(packageName, responseJSON.get("events").getAsJsonObject());
+
+                        // Get the namespace of the package
+                        String namespace = responseJSON.get("namespace").getAsString();
+                        schemaVersion.put(namespace, responseJSON.get("version").getAsString());
+                    } else {
+                        print("HTTP: Response Failed");
+                    }
+                } catch (Exception e) {
+                    print("HTTP : Response Exception");
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Object> call, @NonNull Throwable t) {
+                print("HTTP: Request failed");
+            }
+        });
     }
 
     /**
@@ -144,26 +242,91 @@ public class Brytescore {
     }
 
     /**
-     *
+     * Check if property is valid, and if so, track it.
      */
     public void brytescore(String property, HashMap<String, Object> data) {
-        System.out.printf("Calling brytescore %s \n", property);
-        // STUB
+        print("Calling brytescore " + property);
+
+        //Ensure that a property is provided
+        if (property == null || property.length() == 0) {
+            print("Abandon ship! You must provide a tracking property.");
+            return;
+        }
+
+        // Retrieve the namespace and function name, from property of format 'namespace.functionName'
+        String[] splitPackage = property.split("\\.");
+
+        if (splitPackage.length != 2) {
+            print("Invalid tracking property name received. Should be of the form: 'namespace.functionName");
+            return;
+        }
+
+        String namespace = splitPackage[0];
+        String functionName = splitPackage[1];
+        functionName = underscoreToCamelCase(functionName);
+
+        JsonObject functions = packageFunctions.get(namespace);
+        if (functions == null || functions.get(functionName) == null) {
+            print("The " + namespace + " package is not loaded, or " + functionName + " is not a valid function name.");
+            return;
+        }
+
+        // Retrieve the function details from the loaded package, ensuring that it exists
+        JsonObject functionDetails = functions.get(functionName).getAsJsonObject();
+
+        if (functionDetails == null || functionDetails.get("displayName") == null) {
+            print("The function display name could not be loaded.");
+            return;
+        }
+
+        String eventDisplayName = functionDetails.get("displayName").getAsString();
+
+        // Tack the validated listing
+        track(property, eventDisplayName, data);
     }
 
     /**
      * Start a pageView.
      *
      * @param data The pageView data.
-     * @param data.isImpersonating
-     * @param data.pageUrl
-     * @param data.pageTitle
-     * @param data.referrer
+     * data.isImpersonating
+     * data.pageUrl
+     * data.pageTitle
+     * data.referrer
      */
     public void pageView(HashMap<String, Object> data) {
-        System.out.println("Calling pageView");
+        print("Calling pageView: " + data);
+
+        // If the user is being impersonated, do not track.
+        if (!checkImpersonation(data)) {
+            return;
+        }
+
+        totalPageViewTime = 0;
+        pageViewId = generateUUID();
 
         track(eventNames.get("pageView"), "Viewed a Page", data);
+
+        // Save session information
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("brytescore_session_sid", sessionId);
+        editor.putString("brytescore_session_aid", anonymousId);
+        editor.apply();
+
+        // Send the first heartbeat and start the timer
+        print("Sending 'first' heartbeat");
+        heartbeat();
+        heartbeatTimerHandler = new Handler();
+        heartbeatTimer = new Runnable() {
+            @Override
+            public void run() {
+                checkHeartbeat();
+                if (heartbeatTimerHandler != null) {
+                    heartbeatTimerHandler.postDelayed(this, heartbeatLength);
+                }
+            }
+        };
+        heartbeatTimerHandler.postDelayed(heartbeatTimer, heartbeatLength);
     }
 
     /**
@@ -173,11 +336,11 @@ public class Brytescore {
      * - data.userAccount.id
      */
     public void registeredAccount(HashMap<String, Object> data) {
-        System.out.println("Calling registeredAccount");
+        print("Calling registeredAccount: " + data);
         Boolean userStatus = updateUser(data);
 
         // Finally, as long as the data was valid, track the account registration
-        if (userStatus == true) {
+        if (userStatus) {
             track(eventNames.get("registeredAccount"), "Created a new account", data);
         }
     }
@@ -188,9 +351,12 @@ public class Brytescore {
      * @param data: The chat data.
      */
     public void submittedForm(HashMap<String, Object> data) {
-        System.out.println("Calling submittedForm");
+        print("Calling submittedForm");
 
-        // TODO If the user is being impersonated, do not track.
+        // If the user is being impersonated, do not track.
+        if (!checkImpersonation(data)) {
+            return;
+        }
 
         track(eventNames.get("submittedForm"), "Submitted a form", data);
     }
@@ -201,9 +367,12 @@ public class Brytescore {
      * @param data: The chat data.
      */
     public void startedChat(HashMap<String, Object> data) {
-        System.out.println("Calling startedChat");
+        print("Calling startedChat");
 
-        // TODO If the user is being impersonated, do not track.
+        // If the user is being impersonated, do not track.
+        if (!checkImpersonation(data)) {
+            return;
+        }
 
         track(eventNames.get("startedChat"), "User Started a Live Chat", data);
     }
@@ -214,12 +383,18 @@ public class Brytescore {
      * @param data: The account data.
      */
     public void updatedUserInfo(HashMap<String, Object> data) {
-        System.out.println("Calling updatedUserInfo");
-        // TODO If the user is being impersonated, do not track.
+        print("Calling updatedUserInfo: " + data);
 
-        // TODO validate user info
+        // If user is being impersonated, do not track.
+        if (!checkImpersonation(data)) {
+            return;
+        }
 
-        track(eventNames.get("updatedUserInfo"), "User Started a Live Chat", data);
+        // Finally, as long as the data was valid, track the user info update
+        boolean userStatus = updateUser(data);
+        if (userStatus) {
+            track(eventNames.get("updatedUserInfo"), "User Started a Live Chat", data);
+        }
     }
 
     /**
@@ -231,11 +406,58 @@ public class Brytescore {
      * data.userAccount.id
      */
     public void authenticated(HashMap<String, Object> data) {
-        System.out.println("Calling authenticated");
-        // TODO If the user is being impersonated, do not track.
+        print("Calling authenticated");
 
-        // TODO validate user info
+        // If the user is being impersonated, do not track.
+        if (!checkImpersonation(data)) {
+            return;
+        }
 
+        // Ensure that we have a user ID from data.userAcount.id
+        HashMap<String, Integer> userAccount;
+        try {
+            userAccount = (HashMap<String, Integer>) data.get("userAccount");
+        } catch (ClassCastException ex) {
+            print("data.userAccount is not defined");
+            print(ex.toString());
+            return;
+        }
+
+        if (userAccount == null) {
+            print("data.userAccount is not defined");
+            return;
+        }
+
+        Integer newUserId = userAccount.get("id");
+        if(newUserId == null) {
+            print("data.userAccount.id is not defined");
+            return;
+        }
+
+        // Check if we have an existing aid, otherwise generate
+        if (!preferences.getString("brytescore_uu_aid", "-1").equals("-1")) {
+            anonymousId = preferences.getString("brytescore_uu_aid", "-1");
+            print("Retrieved anonymous user ID: " + anonymousId);
+        } else {
+            anonymousId = generateUUID();
+        }
+
+        // Retrieve user ID from brytescore_uu_uid
+        Integer storedUserID = preferences.getInt("brytescore_uu_uid", -1);
+
+        // If there is a UID stored locally and the lcoalUID does not match our new UID
+        if (storedUserID != -1 && !storedUserID.equals(newUserId)) {
+            print("Retrieved user ID: " + storedUserID);
+            changeLoggedInUser(newUserId); // Saves our new user ID to our global userID
+        }
+
+        // Save our anonymous id and user id to local storage
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("brytescore_uu_aid", anonymousId);
+        editor.putInt("brytescore_uu_uid", userId);
+        editor.apply();
+
+        // Finally, in any case, track the authentication
         track(eventNames.get("authenticated"), "Logged in", data);
     }
 
@@ -243,14 +465,21 @@ public class Brytescore {
      * Kills the session.
      */
     public void killSession() {
-        System.out.println("Calling killSession");
+        print("Calling killSession");
 
-        // TODO Stop the timer
+        // Stop the timer
+        heartbeatTimerHandler.removeCallbacks(heartbeatTimer);
+        heartbeatTimerHandler = null;
+        heartbeatTimer = null;
 
-        // TODO Reset the heartbeat start time
+        // Reset the heartbeat start time
+        startHeartbeatTime = Calendar.getInstance().getTime();
 
-        // Delete and TODO save session id
+        // Delete and save session id
         sessionId = null;
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("brytescore_session_sid", sessionId);
+        editor.apply();
 
         // Reset pageViewIDs
         pageViewId = null;
@@ -263,12 +492,15 @@ public class Brytescore {
      * @param eventName The event name.
      * @param eventDisplayName The event display name.
      * @param data The event data.
-     * @param data.isImpersonating Bool whether user is being impersonated
      */
     private void track(String eventName, String eventDisplayName, HashMap<String, Object> data) {
-        System.out.println("Calling track");
+        print("Calling track: " + eventName + " " + eventDisplayName + " " + data);
 
-        // TODO: check impersonation mode
+        // If the user is being impersonated, do not track.
+        if (!checkImpersonation(data)) {
+            return;
+        }
+
         sendRequest("track", eventName, eventDisplayName, data);
     }
 
@@ -278,13 +510,13 @@ public class Brytescore {
      * @param path path for the API URL.
      * @param eventName name of the event being tracked.
      * @param eventDisplayName display name of the event being tracked.
-     * @param data metadate of the event being tracked.
+     * @param data metadata of the event being tracked.
      */
     private void sendRequest(String path, final String eventName, final String eventDisplayName, final HashMap<String, Object> data) {
-        System.out.printf("Calling sendRequest %s %s %s\n", path, eventName, eventDisplayName);
+        print("Calling sendRequest " + path + " " + eventName + " " + eventDisplayName);
 
         if (_apiKey.length() == 0) {
-            System.out.println("Abandon ship! You must provide an API key.");
+            print("Abandon ship! You must provide an API key.");
             return;
         }
 
@@ -321,7 +553,7 @@ public class Brytescore {
             put("apiKey", _apiKey);
             put("anonymousId", anonymousId);
             put("userId", userId);
-            put("pageViewId", generateUUID());
+            put("pageViewId", pageViewId);
             put("sessionId", sessionId);
             put("library", library);
             put("libraryVersion", libraryVersion);
@@ -338,27 +570,37 @@ public class Brytescore {
             Call<ResponseBody> call = service.track(eventData);
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    System.out.println("HTTP: Response Caught");
+                public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                    print("HTTP: Response Caught");
                     try {
                         if (response.isSuccessful()) {
-                            System.out.println("HTTP: Response Success");
+                            print("HTTP: Response Success");
+
+                            // Parse the API response data
+                            Gson gson = new Gson();
+                            String responseStr = gson.toJson(response);
+
+                            // Get JsonObject from String
+                            JsonParser jsonParser = new JsonParser();
+                            JsonObject responseJSON = jsonParser.parse(responseStr).getAsJsonObject();
+
+                            print("Call Successful, response: " + responseJSON);
                         } else {
-                            System.out.println("HTTP: Response Failed");
+                            print("HTTP: Response Failed");
                         }
                     } catch (Exception e) {
-                        System.out.println("HTTP : Response Exception");
+                        print("HTTP : Response Exception");
                         e.printStackTrace();
                     }
                 }
 
                 @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    System.out.println("HTTP: Request failed");
+                public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                    print("HTTP: Request failed");
                 }
             });
         } else {
-            System.out.println("Dev mode is enabled");
+            print("Dev mode is enabled");
         }
     }
 
@@ -369,8 +611,60 @@ public class Brytescore {
      */
     private String generateUUID() {
         UUID uuid = UUID.randomUUID();
-        String UUIDString = uuid.toString();
-        return UUIDString;
+        return uuid.toString();
+    }
+
+    /**
+     * Process a change in the logged in user:
+     * - Kill current session for old user
+     * - Update and save the global user ID variable
+     * - Generate and save new anonymousId
+     * - Generate new sessionId
+     *
+     * @param userID the user ID.
+     */
+    private void changeLoggedInUser(int userID) {
+        // Kill current session for old user
+        killSession();
+
+        // Update and save the global user ID variable
+        userId = userID;
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putInt("brytescore_uu_uid", userId);
+
+
+        // Generate and save new anonymousId
+        anonymousId = generateUUID();
+        editor.putString("brytescore_uu_aid", anonymousId);
+        editor.apply();
+
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("anonymousId", anonymousId);
+        track(eventNames.get("brytescoreUUIDCreated"), "New user id Created", data);
+
+        // Generate new sessionId
+        sessionId = generateUUID();
+
+        data = new HashMap<>();
+        data.put("sessionId", sessionId);
+        data.put("anonymousId", anonymousId);
+        track(eventNames.get("sessionStarted"), "started new session", data);
+
+        // Page view will update session cookie no need to write one.
+        pageView(new HashMap<String, Object>());
+    }
+
+    /**
+     * Update heartbeat and track.
+     */
+    private void heartbeat() {
+        print("Calling heartbeat");
+
+        totalPageViewTime = totalPageViewTime + heartbeatLength;
+
+        HashMap<String, Object> data = new HashMap<>();
+        data.put("elapsedTime", totalPageViewTime);
+        track(eventNames.get("heartBeat"), "Heartbeat", data);
     }
 
     /**
@@ -386,33 +680,49 @@ public class Brytescore {
 
         // Ensure that we have a user ID from data.userAccount.id
         if (!data.containsKey("userAccount")) {
-            System.out.println("data.userAccount is not defined");
+            print("data.userAccount is not defined");
             return Boolean.FALSE;
         }
 
-       // TODO
-        Integer localUserID = 10;
-       // else if (data.get("userAccount") instanceof Map == false || data.get("userAccount").get("id") == null) {
-       //     System.out.println("data.userAccount.id is not defined");
-       //     return Boolean.FALSE;
-       // } else {
-       // }
+        HashMap<String, Integer> userAccount;
+        try {
+            userAccount = (HashMap<String, Integer>) data.get("userAccount");
+        } catch (ClassCastException ex){
+            print("data.userAccount is not defined");
+            print(ex.toString());
+            return Boolean.FALSE;
+        }
+
+        if (!userAccount.containsKey("id")) {
+            print("data.userAccount.id is not defined");
+            return Boolean.FALSE;
+        }
+
+        Integer localUserID = userAccount.get("id");
 
         // If we haven't saved the user ID globally, or the user IDs do not match
-        if (userId == null || localUserID != userId) {
-            // TODO Retrieve anonymous user ID from brytescore_uu_aid, or generate a new anonymous user ID
-            final String anonymousId = generateUUID();
-            System.out.printf("Generated new anonymous user ID: %s \n", anonymousId);
-
-            HashMap<String, Object> createdData = new HashMap<String, Object>() {{
-                put("anonymousId", anonymousId);
-            }};
-            track(eventNames.get("brytescoreUUIDCreated"), "New user id Created", createdData);
+        if (userId == null || !localUserID.equals(userId)) {
+            // Retrieve anonymous user ID from brytescore_uu_aid, or generate a new anonymous uer ID
+            if (!preferences.getString("brytescore_uu_aid", "-1").equals("-1")) {
+                anonymousId = preferences.getString("brytescore_uu_aid", "-1");
+                print("Retrieved anonymous user ID: " + anonymousId);
+            } else {
+                print("No anonymous ID has been saved. Generating...");
+                String anonymousId = generateUUID();
+                print("Generated new anonymous user ID: " + anonymousId);
+                HashMap<String, Object> createdData = new HashMap<>();
+                createdData.put("anonymousId", anonymousId);
+                track(eventNames.get("brytescoreUUIDCreated"), "New user id Created", createdData);
+            }
 
             // Save our new user ID to our global userId
             userId = localUserID;
 
-            // TODO Save our anonymous id and user id to local storage.
+            // Save our anonymous id and user id to local storage
+            SharedPreferences.Editor editor = preferences.edit();
+            editor.putString("brytescore_uu_aid", anonymousId);
+            editor.putInt("brytescore_uu_uid", userId);
+            editor.apply();
         }
 
         return Boolean.TRUE;
@@ -425,11 +735,71 @@ public class Brytescore {
      */
     private Boolean checkImpersonation(HashMap<String, Object> data) {
         if (impersonationMode || data.get("impersonationMode") != null) {
-            System.out.println("Impersonation mode is on - will not track event");
+            print("Impersonation mode is on - will not track event");
             return Boolean.FALSE;
         }
         return Boolean.TRUE;
     }
 
-    // TODO override println and printf to suppress when debug mode is off.
+    /**
+     *Checks the heartbeat timer. If not dead, restarts it. If dead, kills session.
+     */
+    private void checkHeartbeat() {
+        print("Calling checkHeartbeat");
+
+        Long elapsed = Calendar.getInstance().getTime().getTime() - startHeartbeatTime.getTime();
+
+        if (elapsed < 1800) {
+            // Heartbeat is not dead yet.
+            print("Heartbeat is not dead yet.");
+            startHeartbeatTime = Calendar.getInstance().getTime();
+            heartbeat();
+        } else {
+            // Heartbeat is dead
+            print("Heartbeat is dead.");
+            killSession();
+        }
+    }
+
+    /**
+     * Override log function to only print while in debug mode.
+     *
+     * @param details Details to print.
+     */
+    private void print(String details) {
+        if (debugMode) {
+            Log.d(TAG, details);
+        }
+    }
+
+    // ------------------------------------ String functions: ---------------------------------- //
+
+    /**
+     * Capitalizes the first letter of a given string
+     *
+     * @param string String to capitalize
+     * @return Capitalized string
+     */
+    private String capitalizeFirstLetter(String string) {
+        String first = string.substring(0, 1).toUpperCase();
+        String other = string.substring(1);
+        return first + other;
+    }
+
+    /**
+     * Converts a string from 'snake_case' to 'camelCase;
+     * Does so by finding any underscores and capitalizing the next character
+     *
+     * @param string String in snake case
+     * @return String in camel case
+     */
+    private String underscoreToCamelCase(String string) {
+        String[] items = string.split("_");
+        String camelCase = "";
+        for (int i = 0; i < items.length; i++) {
+            camelCase += (i == 0 ? items[i] : capitalizeFirstLetter(items[i]));
+        }
+
+        return camelCase;
+    }
 }
