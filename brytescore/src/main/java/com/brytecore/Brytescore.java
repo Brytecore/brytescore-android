@@ -32,8 +32,7 @@ public class Brytescore {
     // ------------------------------------ static variables ------------------------------------ //
     // Variables used to fill event data for tracking
     private static final String TAG = "Brytescore";
-//    private static String _url = "https://api.brytecore.com/";
-    private static String _url = "http://bda15d1d.ngrok.io/";
+    private static String _url = "https://api.brytecore.com/";
     private static String _packageUrl = "https://cdn.brytecore.com/packages/";
     private static String _packageName = "/package.json";
     private static String hostname = "com.brytecore.mobile";
