@@ -2,7 +2,6 @@ package com.brytecore.brytescoreExample;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.ToggleButton;
@@ -24,12 +23,14 @@ public class MainActivity extends AppCompatActivity {
 
 
     // Initialize the API Manager with your API key.
-    Brytescore brytescore = new Brytescore("abc123");
+    Brytescore brytescore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        brytescore = new Brytescore(getApplicationContext(), "abc123");
 
         // Enable dev mode - logs API calls instead of making HTTP request
         brytescore.devMode(devMode);
@@ -40,6 +41,9 @@ public class MainActivity extends AppCompatActivity {
         brytescore.debugMode(debugMode);
         ToggleButton debugModeToggle = ((ToggleButton)findViewById(R.id.debugModeButton));
         debugModeToggle.setChecked(debugMode);
+
+        // Load real estate package
+        brytescore.load("realestate");
 
         // Update the API Key label to show our API key for debugging
         final TextView textViewToChange = (TextView) findViewById(R.id.apikey);
@@ -52,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public void trackPageView(View view) {
         HashMap<String, Object> pageViewData = new HashMap<String, Object>();
+        pageViewData.put("test_key", "test_data");
+
         brytescore.pageView(pageViewData);
     }
 
@@ -60,7 +66,12 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking an account registration
      */
     public void trackRegisteredAccount(View view) {
+        final HashMap<String, Integer> userAccount = new HashMap<String, Integer>() {{
+            put("id", 1);
+        }};
+
         HashMap<String, Object> registeredAccountData = new HashMap<String, Object>() {{
+            put("userAccount", userAccount);
             put("isLead", false);
         }};
         brytescore.registeredAccount(registeredAccountData);
@@ -71,8 +82,12 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking authentication
      */
     public void trackAuthenticated(View view) {
+        final HashMap<String, Integer> userAccount = new HashMap<String, Integer>() {{
+            put("id", 1);
+        }};
+
         HashMap<String, Object> authenticatedData = new HashMap<String, Object>() {{
-            put("userAccount", 1);
+            put("userAccount", userAccount);
         }};
         brytescore.authenticated(authenticatedData);
     }
@@ -82,8 +97,12 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking a submitted form
      */
     public void trackSubmittedForm(View view) {
+        final HashMap<String, Integer> userAccount = new HashMap<String, Integer>() {{
+            put("id", 1);
+        }};
+
         HashMap<String, Object> submittedFormData = new HashMap<String, Object>() {{
-            put("userAccount", 1);
+            put("userAccount", userAccount);
         }};
         brytescore.submittedForm(submittedFormData);
     }
@@ -93,10 +112,14 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking the start of a chat
      */
     public void trackStartedChat(View view) {
-        HashMap<String, Object> startedCharData = new HashMap<String, Object>() {{
-            put("userAccount", 1);
+        final HashMap<String, Integer> userAccount = new HashMap<String, Integer>() {{
+            put("id", 1);
         }};
-        brytescore.startedChat(startedCharData);
+
+        HashMap<String, Object> startedChatData = new HashMap<String, Object>() {{
+            put("userAccount", userAccount);
+        }};
+        brytescore.startedChat(startedChatData);
     }
 
     /**
@@ -104,10 +127,34 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking when a user updates their information
      */
     public void trackUpdatedUserInfo(View view) {
+        final HashMap<String, Integer> userAccount = new HashMap<String, Integer>() {{
+            put("id", 1);
+        }};
+
         HashMap<String, Object> userInfoData = new HashMap<String, Object>() {{
-            put("userAccount", 1);
+            put("userAccount", userAccount);
         }};
         brytescore.updatedUserInfo(userInfoData);
+    }
+
+    /**
+     * Called when the user taps the Track Reviewed Listing button
+     * Example uasge of tracking when a user reviews a listing.
+     */
+    public void trackReviewedListing(View view) {
+        HashMap<String, Object> viewedListingData = new HashMap<String, Object>() {{
+            put("price", 123456);
+            put("mls_id", "string");
+            put("street_address", "string");
+            put("street_address2", "string");
+            put("city", "string");
+            put("state_province", "string");
+            put("postal_code", "string");
+            put("latitude", "string");
+            put("longitude", "string");
+        }};
+
+        brytescore.brytescore("realestate.viewed_listing", viewedListingData);
     }
 
     /** Toggle devMode bool, pass to brytescore, update button */

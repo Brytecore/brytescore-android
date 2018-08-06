@@ -107,6 +107,18 @@
         android:onClick="trackUpdatedUserInfo"
         android:text="Track Updated User Info" />
 
+    <Button
+        android:id="@+id/trackReviewedListingButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/trackUpdatedUserInfoButton"
+        android:onClick="trackReviewedListing"
+        android:text="Track Reviewed Listing" />
+
     <ToggleButton
         android:id="@+id/devModeButton"
         android:layout_width="wrap_content"
@@ -115,7 +127,7 @@
         android:layout_marginRight="89dp"
         android:onClick="toggleDevMode"
         android:text="ToggleButton"
-        android:layout_below="@+id/trackUpdatedUserInfoButton"
+        android:layout_below="@+id/trackReviewedListingButton"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
@@ -184,10 +196,10 @@
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/validationModeButton"
+        android:layout_alignBottom="@+id/validationModeButton"
+        android:layout_toLeftOf="@+id/validationModeButton"
         android:text="Validation Mode"
-        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium"
-        android:layout_above="@+id/impersonationModeButton"
-        android:layout_alignLeft="@+id/textView"
-        android:layout_alignStart="@+id/textView" />
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Medium" />
 
 </RelativeLayout>
