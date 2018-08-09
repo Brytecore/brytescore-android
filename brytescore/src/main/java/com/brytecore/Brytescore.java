@@ -262,7 +262,6 @@ public class Brytescore {
 
         String namespace = splitPackage[0];
         String functionName = splitPackage[1];
-        functionName = underscoreToCamelCase(functionName);
 
         JsonObject functions = packageFunctions.get(namespace);
         if (functions == null || functions.get(functionName) == null) {
@@ -529,6 +528,17 @@ public class Brytescore {
             namespace[0] = splitPackage[0];
         }
 
+        // Check if sessionId is set, if null, generate a new one
+        if (sessionId == null) {
+            // Get shared preferences editor
+            SharedPreferences.Editor editor = preferences.edit();
+
+            // Generate and save unique session ID
+            sessionId = generateUUID();
+            editor.putString("brytescore_session_sid", sessionId);
+            editor.apply();
+        }
+
         /**
          * Generate the object to send to the API
          *
@@ -748,7 +758,7 @@ public class Brytescore {
 
         Long elapsed = Calendar.getInstance().getTime().getTime() - startHeartbeatTime.getTime();
 
-        if (elapsed < 1800) {
+        if (elapsed < 1800000) {
             // Heartbeat is not dead yet.
             print("Heartbeat is not dead yet.");
             startHeartbeatTime = Calendar.getInstance().getTime();
@@ -773,32 +783,32 @@ public class Brytescore {
 
     // ------------------------------------ String functions: ---------------------------------- //
 
-    /**
-     * Capitalizes the first letter of a given string
-     *
-     * @param string String to capitalize
-     * @return Capitalized string
-     */
-    private String capitalizeFirstLetter(String string) {
-        String first = string.substring(0, 1).toUpperCase();
-        String other = string.substring(1);
-        return first + other;
-    }
-
-    /**
-     * Converts a string from 'snake_case' to 'camelCase;
-     * Does so by finding any underscores and capitalizing the next character
-     *
-     * @param string String in snake case
-     * @return String in camel case
-     */
-    private String underscoreToCamelCase(String string) {
-        String[] items = string.split("_");
-        String camelCase = "";
-        for (int i = 0; i < items.length; i++) {
-            camelCase += (i == 0 ? items[i] : capitalizeFirstLetter(items[i]));
-        }
-
-        return camelCase;
-    }
+//    /**
+//     * Capitalizes the first letter of a given string
+//     *
+//     * @param string String to capitalize
+//     * @return Capitalized string
+//     */
+//    private String capitalizeFirstLetter(String string) {
+//        String first = string.substring(0, 1).toUpperCase();
+//        String other = string.substring(1);
+//        return first + other;
+//    }
+//
+//    /**
+//     * Converts a string from 'snake_case' to 'camelCase;
+//     * Does so by finding any underscores and capitalizing the next character
+//     *
+//     * @param string String in snake case
+//     * @return String in camel case
+//     */
+//    private String underscoreToCamelCase(String string) {
+//        String[] items = string.split("_");
+//        String camelCase = "";
+//        for (int i = 0; i < items.length; i++) {
+//            camelCase += (i == 0 ? items[i] : capitalizeFirstLetter(items[i]));
+//        }
+//
+//        return camelCase;
+//    }
 }

@@ -50,6 +50,23 @@ public class MainActivity extends AppCompatActivity {
         textViewToChange.setText("Your API Key:" + brytescore.getAPIKey());
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        HashMap<String, Object> pageViewData = new HashMap<String, Object>();
+        pageViewData.put("test_key", "test_data");
+
+        brytescore.pageView(pageViewData);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        brytescore.killSession();
+    }
+
     /**
      * Called when the user taps the Track Page View button
      * Example usage of tracking a page view
@@ -139,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Called when the user taps the Track Reviewed Listing button
-     * Example uasge of tracking when a user reviews a listing.
+     * Example usage of tracking when a user reviews a listing.
      */
     public void trackReviewedListing(View view) {
         HashMap<String, Object> viewedListingData = new HashMap<String, Object>() {{
@@ -154,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
             put("longitude", "string");
         }};
 
-        brytescore.brytescore("realestate.viewed_listing", viewedListingData);
+        brytescore.brytescore("realestate.viewedListing", viewedListingData);
     }
 
     /** Toggle devMode bool, pass to brytescore, update button */
