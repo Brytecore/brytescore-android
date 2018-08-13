@@ -337,6 +337,11 @@ public class Brytescore {
         print("Calling registeredAccount: " + data);
         Boolean userStatus = updateUser(data);
 
+        // If the user is being impersonated, do not track.
+        if (!checkImpersonation(data)) {
+            return;
+        }
+
         // Finally, as long as the data was valid, track the account registration
         if (userStatus) {
             track(eventNames.get("registeredAccount"), "Created a new account", data);
