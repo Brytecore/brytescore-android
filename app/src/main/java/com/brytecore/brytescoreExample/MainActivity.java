@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity {
 
     // ------------------------------------ dynamic variables ----------------------------------- //
     // Bools for local status of dev and debug mode, used to toggle state with buttons
-    private Boolean devMode = true;
+    private Boolean devMode = false;
     private Boolean debugMode = true;
     private Boolean impersonationMode = false;
     private Boolean validationMode = false;

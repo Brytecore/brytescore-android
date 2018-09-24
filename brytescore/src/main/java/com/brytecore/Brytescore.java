@@ -337,6 +337,11 @@ public class Brytescore {
         print("Calling registeredAccount: " + data);
         Boolean userStatus = updateUser(data);
 
+        // If the user is being impersonated, do not track.
+        if (!checkImpersonation(data)) {
+            return;
+        }
+
         // Finally, as long as the data was valid, track the account registration
         if (userStatus) {
             track(eventNames.get("registeredAccount"), "Created a new account", data);
@@ -780,35 +785,4 @@ public class Brytescore {
             Log.d(TAG, details);
         }
     }
-
-    // ------------------------------------ String functions: ---------------------------------- //
-
-//    /**
-//     * Capitalizes the first letter of a given string
-//     *
-//     * @param string String to capitalize
-//     * @return Capitalized string
-//     */
-//    private String capitalizeFirstLetter(String string) {
-//        String first = string.substring(0, 1).toUpperCase();
-//        String other = string.substring(1);
-//        return first + other;
-//    }
-//
-//    /**
-//     * Converts a string from 'snake_case' to 'camelCase;
-//     * Does so by finding any underscores and capitalizing the next character
-//     *
-//     * @param string String in snake case
-//     * @return String in camel case
-//     */
-//    private String underscoreToCamelCase(String string) {
-//        String[] items = string.split("_");
-//        String camelCase = "";
-//        for (int i = 0; i < items.length; i++) {
-//            camelCase += (i == 0 ? items[i] : capitalizeFirstLetter(items[i]));
-//        }
-//
-//        return camelCase;
-//    }
 }

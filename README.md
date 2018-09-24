@@ -2,12 +2,7 @@
 
 # brytescore-android
 
-[![Build Status](http://img.shields.io/travis/Brytecore/BrytescoreAPI.svg?branch=master?style=flat)](https://travis-ci.org/Brytecore/BrytescoreAPI)
-[![Version](https://img.shields.io/cocoapods/v/BrytescoreAPI.svg?style=flat)](http://cocoapods.org/pods/BrytescoreAPI)
-[![License](https://img.shields.io/cocoapods/l/BrytescoreAPI.svg?style=flat)](http://cocoapods.org/pods/BrytescoreAPI)
-[![Platform](https://img.shields.io/cocoapods/p/BrytescoreAPI.svg?style=flat)](http://cocoapods.org/pods/BrytescoreAPI)
-
-brytescore-ios is the open-source iOS SDK that connects your website with the Brytescore API. The
+brytescore-android is the open-source Android SDK that connects your website with the Brytescore API. The
 Brytescore API allows you to track your users' behavior and score their engagement.
 
 ## Example
@@ -25,7 +20,8 @@ compile project(path: ':brytescore')
 
 ## Methods
 
-#### Initialization
+### Initialization
+
 Sets the API key.
 Generates a new unique session ID.
 Retrieves the saved user ID, if any.
@@ -36,7 +32,8 @@ Retrieves the saved user ID, if any.
     brytescore = new Brytescore(getApplicationContext(), "<api-key>");
 ```
 
-#### getAPIKey
+### getAPIKey
+
 Returns the current API key
 
 - returns: The current API key
@@ -45,7 +42,8 @@ Returns the current API key
     String apiKey = brytescore.getAPIKey();
 ```
 
-#### load
+### load
+
 Function to load json packages.
 
 - parameter {string} The name of the package.
@@ -54,7 +52,8 @@ Function to load json packages.
     brytescore.load("realestate");
 ```
 
-#### devMode
+### devMode
+
 Sets dev mode.
 Logs events to the console instead of sending to the API.
 Turning on dev mode automatically triggers debug mode.
@@ -65,7 +64,8 @@ Turning on dev mode automatically triggers debug mode.
     brytescore.devMode(devMode);
 ```
 
-#### debugMode
+### debugMode
+
 Sets debug mode.
 Log events are suppressed when debug mode is off.
 
@@ -75,7 +75,8 @@ Log events are suppressed when debug mode is off.
     brytescore.debugMode(debugMode);
 ```
 
-#### impersonationMode
+### impersonationMode
+
 Sets impersonation mode.
 Bypasses sending information to the API when impersonating another user.
 
@@ -85,7 +86,8 @@ Bypasses sending information to the API when impersonating another user.
     brytescore.impersonationMode(impersonationMode);
 ```
 
-#### validationMode
+### validationMode
+
 Sets validation mode.
 Adds a validation attribute to the data for all API calls.
 
@@ -95,7 +97,8 @@ Adds a validation attribute to the data for all API calls.
     brytescore.validationMode(validationMode);
 ```
 
-#### brytescore
+### brytescore
+
 Start tracking a property specific to a loaded package.
 
 - parameter property: The property name
@@ -105,7 +108,8 @@ Start tracking a property specific to a loaded package.
     brytescore.brytescore("<property-name>", propertyData);
 ```
 
-#### pageView
+### pageView
+
 Start a pageView.
 
 - parameter data: The pageView data.
@@ -118,7 +122,8 @@ Start a pageView.
     brytescore.pageView(pageViewData);
 ```
 
-#### registeredAccount
+### registeredAccount
+
 Sends a new account registration event.
 
 - parameter data: The registration data.
@@ -129,7 +134,8 @@ Sends a new account registration event.
     brytescore.registeredAccount(registeredAccountData);
 ```
 
-#### submittedForm
+### submittedForm
+
 Sends a submittedForm event.
 
 - parameter data: The chat data.
@@ -139,7 +145,8 @@ Sends a submittedForm event.
     brytescore.submittedForm(submittedFormData);
 ```
 
-#### startedChat
+### startedChat
+
 Sends a startedChat event.
 
 - parameter data: The form data.
@@ -149,7 +156,8 @@ Sends a startedChat event.
     brytescore.startedChat(startedChatData);
 ```
 
-#### updatedUserInfo
+### updatedUserInfo
+
 Updates a user's account information.
 
 - parameter data: The account data.
@@ -158,7 +166,8 @@ Updates a user's account information.
     brytescore.updatedUserInfo(updatedUserInfoData);
 ```
 
-#### authenticated
+### authenticated
+
 Sends a user authentication event.
 
 - parameter data: The authentication data.
@@ -170,7 +179,8 @@ Sends a user authentication event.
     brytescore.authenticated(authenticatedData);
 ```
 
-#### killSession
+### killSession
+
 Kills the session.
 
 ```java
