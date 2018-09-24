@@ -1,0 +1,39 @@
+apply plugin: 'com.github.dcendents.android-maven'
+
+group = 'com.brytecore.brytescore'
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+                groupId 'com.brytecore.brytescore'
+                artifactId 'brytescore'
+                name 'brytescore'
+                description 'brytescore-android is the open-source Android SDK that connects your website with the Brytescore API. The Brytescore API allows you to track your users\' behavior and score their engagement.'
+                url 'https://github.com/Brytecore/brytescore-android'
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'cuttlesoft'
+                        name 'Emily Morehouse-Valcarcel'
+                        email 'engineering@cuttlesoft.com'
+                    }
+                }
+
+                scm {
+                    connection 'https://github.com/Brytecore/brytescore-android.git'
+                    developerConnection 'https://github.com/Brytecore/brytescore-android.git'
+                    url 'https://github.com/Brytecore/brytescore-android'
+                }
+            }
+        }
+    }
+}
