@@ -132,7 +132,6 @@
         android:layout_alignParentEnd="true" />
 
     <TextView
-        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/devModeButton"
@@ -153,7 +152,6 @@
         android:layout_alignStart="@+id/devModeButton" />
 
     <TextView
-        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/debugModeButton"
@@ -173,7 +171,6 @@
         android:layout_alignStart="@+id/debugModeButton" />
 
     <TextView
-        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/impersonationModeButton"
@@ -193,7 +190,6 @@
         android:layout_alignStart="@+id/impersonationModeButton" />
 
     <TextView
-        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/validationModeButton"
