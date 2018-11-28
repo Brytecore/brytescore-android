@@ -22,9 +22,9 @@ install {
 
                 developers {
                     developer {
-                        id 'cuttlesoft'
+                        id 'brytecore'
                         name 'Emily Morehouse-Valcarcel'
-                        email 'engineering@cuttlesoft.com'
+                        email 'engineering+brytecore@cuttlesoft.com'
                     }
                 }
 
