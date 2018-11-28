@@ -83,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking an account registration
      */
     public void trackRegisteredAccount(View view) {
-        final HashMap<String, Integer> userAccount = new HashMap<String, Integer>() {{
-            put("id", 1);
+        final HashMap<String, Object> userAccount = new HashMap<String, Object>() {{
+            put("id", "1");
         }};
 
         HashMap<String, Object> registeredAccountData = new HashMap<String, Object>() {{
@@ -99,8 +99,8 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking authentication
      */
     public void trackAuthenticated(View view) {
-        final HashMap<String, Integer> userAccount = new HashMap<String, Integer>() {{
-            put("id", 1);
+        final HashMap<String, Object> userAccount = new HashMap<String, Object>() {{
+            put("id", "1");
         }};
 
         HashMap<String, Object> authenticatedData = new HashMap<String, Object>() {{
@@ -114,8 +114,8 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking a submitted form
      */
     public void trackSubmittedForm(View view) {
-        final HashMap<String, Integer> userAccount = new HashMap<String, Integer>() {{
-            put("id", 1);
+        final HashMap<String, Object> userAccount = new HashMap<String, Object>() {{
+            put("id", "1");
         }};
 
         HashMap<String, Object> submittedFormData = new HashMap<String, Object>() {{
@@ -129,8 +129,8 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking the start of a chat
      */
     public void trackStartedChat(View view) {
-        final HashMap<String, Integer> userAccount = new HashMap<String, Integer>() {{
-            put("id", 1);
+        final HashMap<String, Object> userAccount = new HashMap<String, Object>() {{
+            put("id", "1");
         }};
 
         HashMap<String, Object> startedChatData = new HashMap<String, Object>() {{
@@ -144,8 +144,8 @@ public class MainActivity extends AppCompatActivity {
      * Example usage of tracking when a user updates their information
      */
     public void trackUpdatedUserInfo(View view) {
-        final HashMap<String, Integer> userAccount = new HashMap<String, Integer>() {{
-            put("id", 1);
+        final HashMap<String, Object> userAccount = new HashMap<String, Object>() {{
+            put("id", "1");
         }};
 
         HashMap<String, Object> userInfoData = new HashMap<String, Object>() {{
