@@ -128,7 +128,8 @@ public class Brytescore {
         sessionId = generateUUID();
         editor.putString("brytescore_session_sid", sessionId);
 
-        // Retrieve user ID from brytescore_uu_uid
+        // Retrieve user ID from brytescore_uu_uid -
+        // check if userID is an int or String for backwards compatibility, userID should be a String
         Map<String, ?> all = preferences.getAll();
         if (all.get("brytescore_uu_uid") instanceof String) {
             userId = preferences.getString("brytescore_uu_uid", "");
@@ -601,7 +602,6 @@ public class Brytescore {
             eventData.put("validationOnly", validationMode);
         }
 
-        print(eventData.toString());
         if (!devMode) {
             Call<ResponseBody> call = service.track(eventData);
             call.enqueue(new Callback<ResponseBody>() {
