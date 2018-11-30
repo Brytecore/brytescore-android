@@ -37,7 +37,7 @@ public class Brytescore {
     private static String _packageName = "/package.json";
     private static String hostname = "com.brytecore.mobile";
     private static String library = "Android";
-    private static String libraryVersion = "0.0.0";
+    private static String libraryVersion = "1.1.0";
 
     private HashMap<String, String> eventNames = new HashMap<String, String>() {{
         put("authenticated", "authenticated");
@@ -56,7 +56,7 @@ public class Brytescore {
     private SharedPreferences preferences;
 
     // Variables to hold package-wide IDs
-    private Integer userId;
+    private String userId;
     private String anonymousId;
     private String sessionId;
     private String pageViewId;
@@ -127,10 +127,32 @@ public class Brytescore {
         // Generate and save unique session ID
         sessionId = generateUUID();
         editor.putString("brytescore_session_sid", sessionId);
-        editor.apply();
 
-        // Retrieve user ID from brytescore_uu_uid
-        userId = preferences.getInt("brytescore_uu_uid", -1);
+        // Retrieve user ID from brytescore_uu_uid -
+        // check if userID is an int or String for backwards compatibility, userID should be a String
+        Map<String, ?> all = preferences.getAll();
+        if (all.get("brytescore_uu_uid") instanceof String) {
+            userId = preferences.getString("brytescore_uu_uid", "");
+        } else if(all.get("brytescore_uu_uid") instanceof Integer) {
+            int temp = preferences.getInt("brytescore_uu_uid", -1);
+            userId = temp == -1 ? "" : String.valueOf(temp);
+        } else {
+            userId = "";
+        }
+
+        editor.putString("brytescore_uu_uid", userId);
+
+        // Check if we have an existing anonymous ID from brytescore_uu_aid, otherwise generate
+        if (!preferences.getString("brytescore_uu_aid", "").equals("")) {
+            anonymousId = preferences.getString("brytescore_uu_aid", "");
+            print("Retrieved anonymous user ID: " + anonymousId);
+        } else {
+            String anonymousId = generateUUID();
+            print("Generated new anonymous user ID: " + anonymousId);
+            editor.putString("brytescore_uu_aid", anonymousId);
+        }
+
+        editor.apply();
     }
 
     /**
@@ -417,9 +439,9 @@ public class Brytescore {
         }
 
         // Ensure that we have a user ID from data.userAcount.id
-        HashMap<String, Integer> userAccount;
+        HashMap<String, Object> userAccount;
         try {
-            userAccount = (HashMap<String, Integer>) data.get("userAccount");
+            userAccount = (HashMap<String, Object>) data.get("userAccount");
         } catch (ClassCastException ex) {
             print("data.userAccount is not defined");
             print(ex.toString());
@@ -431,25 +453,25 @@ public class Brytescore {
             return;
         }
 
-        Integer newUserId = userAccount.get("id");
+        String newUserId = (String)userAccount.get("id");
         if(newUserId == null) {
             print("data.userAccount.id is not defined");
             return;
         }
 
         // Check if we have an existing aid, otherwise generate
-        if (!preferences.getString("brytescore_uu_aid", "-1").equals("-1")) {
-            anonymousId = preferences.getString("brytescore_uu_aid", "-1");
+        if (!preferences.getString("brytescore_uu_aid", "").equals("")) {
+            anonymousId = preferences.getString("brytescore_uu_aid", "");
             print("Retrieved anonymous user ID: " + anonymousId);
         } else {
             anonymousId = generateUUID();
         }
 
         // Retrieve user ID from brytescore_uu_uid
-        Integer storedUserID = preferences.getInt("brytescore_uu_uid", -1);
+        String storedUserID = preferences.getString("brytescore_uu_uid", "");
 
-        // If there is a UID stored locally and the lcoalUID does not match our new UID
-        if (storedUserID != -1 && !storedUserID.equals(newUserId)) {
+        // If there is a UID stored locally and the localUID does not match our new UID
+        if (storedUserID != null && !storedUserID.equals(newUserId)) {
             print("Retrieved user ID: " + storedUserID);
             changeLoggedInUser(newUserId); // Saves our new user ID to our global userID
         }
@@ -457,7 +479,7 @@ public class Brytescore {
         // Save our anonymous id and user id to local storage
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString("brytescore_uu_aid", anonymousId);
-        editor.putInt("brytescore_uu_uid", userId);
+        editor.putString("brytescore_uu_uid", userId);
         editor.apply();
 
         // Finally, in any case, track the authentication
@@ -592,13 +614,9 @@ public class Brytescore {
 
                             // Parse the API response data
                             Gson gson = new Gson();
-                            String responseStr = gson.toJson(response);
+                            String responseStr = gson.toJson(response.body().string());
 
-                            // Get JsonObject from String
-                            JsonParser jsonParser = new JsonParser();
-                            JsonObject responseJSON = jsonParser.parse(responseStr).getAsJsonObject();
-
-                            print("Call Successful, response: " + responseJSON);
+                            print("Call Successful, response: " + responseStr);
                         } else {
                             print("HTTP: Response Failed");
                         }
@@ -637,14 +655,14 @@ public class Brytescore {
      *
      * @param userID the user ID.
      */
-    private void changeLoggedInUser(int userID) {
+    private void changeLoggedInUser(String userID) {
         // Kill current session for old user
         killSession();
 
         // Update and save the global user ID variable
         userId = userID;
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putInt("brytescore_uu_uid", userId);
+        editor.putString("brytescore_uu_uid", userId);
 
 
         // Generate and save new anonymousId
@@ -698,9 +716,9 @@ public class Brytescore {
             return Boolean.FALSE;
         }
 
-        HashMap<String, Integer> userAccount;
+        HashMap<String, Object> userAccount;
         try {
-            userAccount = (HashMap<String, Integer>) data.get("userAccount");
+            userAccount = (HashMap<String, Object>) data.get("userAccount");
         } catch (ClassCastException ex){
             print("data.userAccount is not defined");
             print(ex.toString());
@@ -712,13 +730,13 @@ public class Brytescore {
             return Boolean.FALSE;
         }
 
-        Integer localUserID = userAccount.get("id");
+        String localUserID = (String)userAccount.get("id");
 
         // If we haven't saved the user ID globally, or the user IDs do not match
         if (userId == null || !localUserID.equals(userId)) {
             // Retrieve anonymous user ID from brytescore_uu_aid, or generate a new anonymous uer ID
-            if (!preferences.getString("brytescore_uu_aid", "-1").equals("-1")) {
-                anonymousId = preferences.getString("brytescore_uu_aid", "-1");
+            if (!preferences.getString("brytescore_uu_aid", "").equals("")) {
+                anonymousId = preferences.getString("brytescore_uu_aid", "");
                 print("Retrieved anonymous user ID: " + anonymousId);
             } else {
                 print("No anonymous ID has been saved. Generating...");
@@ -735,7 +753,7 @@ public class Brytescore {
             // Save our anonymous id and user id to local storage
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString("brytescore_uu_aid", anonymousId);
-            editor.putInt("brytescore_uu_uid", userId);
+            editor.putString("brytescore_uu_uid", userId);
             editor.apply();
         }
 
