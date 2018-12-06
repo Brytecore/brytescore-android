@@ -37,7 +37,7 @@ public class Brytescore {
     private static String _packageName = "/package.json";
     private static String hostname = "com.brytecore.mobile";
     private static String library = "Android";
-    private static String libraryVersion = "1.1.0";
+    private static String libraryVersion = "1.2.0";
 
     private HashMap<String, String> eventNames = new HashMap<String, String>() {{
         put("authenticated", "authenticated");
@@ -147,7 +147,7 @@ public class Brytescore {
             anonymousId = preferences.getString("brytescore_uu_aid", "");
             print("Retrieved anonymous user ID: " + anonymousId);
         } else {
-            String anonymousId = generateUUID();
+            anonymousId = generateUUID();
             print("Generated new anonymous user ID: " + anonymousId);
             editor.putString("brytescore_uu_aid", anonymousId);
         }
