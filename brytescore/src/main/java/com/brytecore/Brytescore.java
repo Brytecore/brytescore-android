@@ -147,7 +147,7 @@ public class Brytescore {
             anonymousId = preferences.getString("brytescore_uu_aid", "");
             print("Retrieved anonymous user ID: " + anonymousId);
         } else {
-            String anonymousId = generateUUID();
+            anonymousId = generateUUID();
             print("Generated new anonymous user ID: " + anonymousId);
             editor.putString("brytescore_uu_aid", anonymousId);
         }
