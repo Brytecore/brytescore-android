@@ -453,7 +453,7 @@ public class Brytescore {
             return;
         }
 
-        String newUserId = (String)userAccount.get("id");
+        String newUserId = String.valueOf(userAccount.get("id"));
         if(newUserId == null) {
             print("data.userAccount.id is not defined");
             return;
@@ -730,7 +730,7 @@ public class Brytescore {
             return Boolean.FALSE;
         }
 
-        String localUserID = (String)userAccount.get("id");
+        String localUserID = String.valueOf(userAccount.get("id"));
 
         // If we haven't saved the user ID globally, or the user IDs do not match
         if (userId == null || !localUserID.equals(userId)) {
