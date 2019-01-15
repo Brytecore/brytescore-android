@@ -37,7 +37,7 @@ public class Brytescore {
     private static String _packageName = "/package.json";
     private static String hostname = "com.brytecore.mobile";
     private static String library = "Android";
-    private static String libraryVersion = "1.2.0";
+    private static String libraryVersion = "1.3.1";
 
     private HashMap<String, String> eventNames = new HashMap<String, String>() {{
         put("authenticated", "authenticated");
@@ -493,9 +493,11 @@ public class Brytescore {
         print("Calling killSession");
 
         // Stop the timer
-        heartbeatTimerHandler.removeCallbacks(heartbeatTimer);
-        heartbeatTimerHandler = null;
-        heartbeatTimer = null;
+        if (heartbeatTimer != null) {
+            heartbeatTimerHandler.removeCallbacks(heartbeatTimer);
+            heartbeatTimerHandler = null;
+            heartbeatTimer = null;
+        }
 
         // Reset the heartbeat start time
         startHeartbeatTime = Calendar.getInstance().getTime();
